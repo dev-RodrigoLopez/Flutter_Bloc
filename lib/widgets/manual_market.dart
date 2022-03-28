@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mapas_bloc/blocs/blocs.dart';
+import 'package:mapas_bloc/helpers/helpers.dart';
 
 
 class ManualMarker extends StatelessWidget {
@@ -29,6 +30,10 @@ class _ManualMarkerBody extends StatelessWidget {
   Widget build(BuildContext context) {
     
     final size = MediaQuery.of(context).size;
+    final searchBloc = BlocProvider.of<SearchBloc>(context);
+    final locationBloc = BlocProvider.of<LocationBloc>(context);
+    final mapaBloc = BlocProvider.of<MapaBloc>(context);
+
 
     return SizedBox(
       width: size.width,
@@ -64,7 +69,25 @@ class _ManualMarkerBody extends StatelessWidget {
                 elevation: 0,
                 height: 50,
                 shape: const StadiumBorder(),
-                onPressed: (){}
+                onPressed: ()async{
+
+                  final start = locationBloc.state.lastKnowLocation;
+                  if( start == null ) return ; 
+
+                  final end = mapaBloc.mapCenter;
+                  if( end == null ) return;
+
+                  showLoadingMessage(context);
+
+                  
+                 final destination = await searchBloc.getCoorsStartToEnd(start, end);
+                 await mapaBloc.drawRoutePolyline(destination);
+                 
+                  searchBloc.add( OnDeactivateActivateManualMarkerEvent() );
+
+                 Navigator.pop( context);
+
+                }
               ),
             )
           )
@@ -90,7 +113,9 @@ class _btnBack extends StatelessWidget {
         child: IconButton(
           icon: const Icon( Icons.arrow_back_ios_new, color: Colors.black ),
           onPressed: (){
-    
+            BlocProvider.of<SearchBloc>(context).add(
+              OnDeactivateActivateManualMarkerEvent()
+            );
           },
         ),
       ),

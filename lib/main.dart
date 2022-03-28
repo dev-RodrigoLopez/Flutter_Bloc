@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mapas_bloc/blocs/blocs.dart';
 import 'package:mapas_bloc/blocs/gps/gps_bloc.dart';
+import 'package:mapas_bloc/services/services.dart';
 
 import 'screens/screens.dart';
 
@@ -12,7 +13,7 @@ void main() {
       BlocProvider(create: (context) => GpsBloc() ),
       BlocProvider(create: (context) => LocationBloc() ),
       BlocProvider(create: (context) => MapaBloc( locationBloc: BlocProvider.of<LocationBloc>(context) ) ),
-      BlocProvider(create: (context) => SearchBloc() ),
+      BlocProvider(create: (context) => SearchBloc( trafficService: TrafficService() ) ),
     ], 
     child: const MapsApp()
   ) );

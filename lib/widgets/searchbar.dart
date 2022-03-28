@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mapas_bloc/blocs/blocs.dart';
@@ -13,7 +14,10 @@ class SearchBar extends StatelessWidget {
       builder: ( context, state ){
         return state.displayManualMarker
           ? const SizedBox()
-          : const _SearchBarBody();
+          : FadeInDown(
+            duration: const Duration( milliseconds: 300),
+              child: const _SearchBarBody()
+            );
       }
     );
   }
@@ -22,13 +26,21 @@ class SearchBar extends StatelessWidget {
 class _SearchBarBody extends StatelessWidget {
   const _SearchBarBody({Key? key}) : super(key: key);
 
-  void onSearchResults( BuildContext context, SearchResult result ){
+  void onSearchResults( BuildContext context, SearchResult result ) async{
 
     final searchBloc = BlocProvider.of<SearchBloc>(context);
+    final mapBloc = BlocProvider.of<MapaBloc>(context);
+    final locationBloc = BlocProvider.of<LocationBloc>(context);
+
 
     if( result.manual ){
       searchBloc.add( OnActivateManualMarkerEvent() );
       return;
+    }
+
+    if( result.position != null ){
+      final destination = await searchBloc.getCoorsStartToEnd(locationBloc.state.lastKnowLocation!, result.position!);
+      await mapBloc.drawRoutePolyline(destination);
     }
 
   }
